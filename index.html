@@ -9,6 +9,7 @@
             --primary: #a29bfe;
             --secondary: #74b9ff;
             --accent: #ff7675;
+            --no-tax: #a4b0be; /* 税なしボタンの色 */
             --bg: #fdfaf6;
             --card-bg: #ffffff;
             --text: #57606f;
@@ -33,6 +34,7 @@
         .add-btn { color: white; border: none; padding: 14px; flex: 1; border-radius: 14px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: transform 0.1s; }
         .add-btn.t10 { background: var(--primary); box-shadow: 0 4px 15px rgba(162, 155, 254, 0.3); }
         .add-btn.t8 { background: var(--secondary); box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3); }
+        .add-btn.t0 { background: var(--no-tax); box-shadow: 0 4px 15px rgba(164, 176, 190, 0.3); }
         .add-btn:active { transform: scale(0.95); }
 
         .item-list { margin-top: 20px; padding: 0; list-style: none; max-height: 200px; overflow-y: auto; }
@@ -63,6 +65,7 @@
         <div class="btn-group">
             <button onclick="addItem(1.1)" class="add-btn t10">10%追加</button>
             <button onclick="addItem(1.08)" class="add-btn t8">8%追加</button>
+            <button onclick="addItem(1)" class="add-btn t0">税なし</button>
         </div>
 
         <ul id="itemList" class="item-list"></ul>
@@ -99,12 +102,15 @@
             items.forEach((item, index) => {
                 const inTax = Math.floor(item.price * item.rate);
                 totalInTax += inTax;
-                const taxLabel = item.rate === 1.1 ? '10%' : '8%';
+                
+                let taxLabel = '税別';
+                if (item.rate === 1.1) taxLabel = '10%';
+                else if (item.rate === 1.08) taxLabel = '8%';
                 
                 const li = document.createElement('li');
                 li.className = 'item-row';
                 li.innerHTML = `
-                    <span><span class="tax-badge">${taxLabel}</span>税抜 ${item.price.toLocaleString()}円 <small>(込${inTax}円)</small></span>
+                    <span><span class="tax-badge">${taxLabel}</span> ${item.price.toLocaleString()}円 <small>(込${inTax}円)</small></span>
                     <button class="del-btn" onclick="removeItem(${index})">削除</button>
                 `;
                 listEl.appendChild(li);
@@ -118,7 +124,7 @@
             progressEl.style.background = diffInTax >= 0 ? 'var(--primary)' : 'var(--accent)';
 
             if (diffInTax >= 0) {
-                // 10%と8%それぞれの買える上限を計算
+                // 残予算で買える目安（簡易的に10%と8%で算出）
                 const limit10 = Math.floor(diffInTax / 1.1);
                 const limit8 = Math.floor(diffInTax / 1.08);
                 statusEl.innerHTML = `あと税抜 ${limit10.toLocaleString()}円 (10%) <br> <span style="font-size:0.8rem; font-weight:normal;">または税抜 ${limit8.toLocaleString()}円 (8%)</span>`;
